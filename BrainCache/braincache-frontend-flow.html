@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BrainCache — Frontend Flow</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#07090f;
+  --s1:#0d1117;
+  --s2:#111827;
+  --s3:#1a2332;
+  --border:#1e2d3d;
+  --border2:#243447;
+  --blue:#3b82f6;
+  --blue-g:rgba(59,130,246,0.12);
+  --green:#10b981;
+  --green-g:rgba(16,185,129,0.12);
+  --amber:#f59e0b;
+  --amber-g:rgba(245,158,11,0.1);
+  --purple:#a78bfa;
+  --purple-g:rgba(167,139,250,0.12);
+  --pink:#f472b6;
+  --pink-g:rgba(244,114,182,0.1);
+  --cyan:#22d3ee;
+  --cyan-g:rgba(34,211,238,0.1);
+  --red:#f87171;
+  --text:#dde4f0;
+  --muted:#4b6070;
+  --dim:#1e2d3d;
+  --mono:'JetBrains Mono',monospace;
+  --display:'Syne',sans-serif;
+}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--mono);
+  padding:40px 28px 60px;
+  min-height:100vh;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(59,130,246,0.06),transparent);
+  pointer-events:none;
+}
+
+h1{
+  font-family:var(--display);font-size:1.9rem;font-weight:800;
+  text-align:center;margin-bottom:4px;
+  background:linear-gradient(130deg,#dde4f0 0%,var(--blue) 50%,var(--purple) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.sub{text-align:center;font-size:0.72rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:44px;}
+
+/* ── SECTION ── */
+.section{
+  max-width:1160px;margin:0 auto 10px;
+  border:1px solid var(--border);border-radius:14px;
+  overflow:hidden;
+}
+.sec-head{
+  padding:10px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+  background:var(--s1);
+}
+.sec-tag{
+  font-size:0.65rem;font-weight:700;letter-spacing:0.1em;
+  text-transform:uppercase;padding:3px 10px;border-radius:5px;
+}
+.t-blue {color:var(--blue);background:var(--blue-g);border:1px solid rgba(59,130,246,.2);}
+.t-green{color:var(--green);background:var(--green-g);border:1px solid rgba(16,185,129,.2);}
+.t-amber{color:var(--amber);background:var(--amber-g);border:1px solid rgba(245,158,11,.2);}
+.t-purple{color:var(--purple);background:var(--purple-g);border:1px solid rgba(167,139,250,.2);}
+.t-pink {color:var(--pink);background:var(--pink-g);border:1px solid rgba(244,114,182,.2);}
+.t-cyan {color:var(--cyan);background:var(--cyan-g);border:1px solid rgba(34,211,238,.2);}
+.sec-body{padding:18px 20px;background:var(--s1);}
+
+/* ── CONNECTOR ── */
+.conn{
+  max-width:1160px;margin:0 auto;
+  display:flex;flex-direction:column;align-items:center;
+  padding:6px 0;gap:2px;
+}
+.conn-line{width:2px;height:18px;background:linear-gradient(to bottom,var(--blue),rgba(59,130,246,.1));}
+.conn-arrow{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid var(--blue);}
+.conn-label{font-size:0.62rem;color:var(--muted);background:var(--bg);padding:2px 8px;border:1px solid var(--border);border-radius:4px;}
+
+/* ── GRID HELPERS ── */
+.row{display:flex;gap:10px;flex-wrap:wrap;}
+.col{display:flex;flex-direction:column;gap:10px;}
+
+/* ── FILE CARD ── */
+.fc{
+  border:1px solid var(--border);border-radius:10px;
+  background:var(--s2);padding:13px 15px;
+  flex:1;min-width:180px;position:relative;overflow:hidden;
+}
+.fc::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+}
+.fc.blue::after{background:var(--blue);}
+.fc.green::after{background:var(--green);}
+.fc.amber::after{background:var(--amber);}
+.fc.purple::after{background:var(--purple);}
+.fc.pink::after{background:var(--pink);}
+.fc.cyan::after{background:var(--cyan);}
+
+.fc-name{
+  font-size:0.72rem;font-weight:700;margin-bottom:9px;
+  display:flex;align-items:center;gap:6px;
+}
+.fc.blue .fc-name{color:var(--blue);}
+.fc.green .fc-name{color:var(--green);}
+.fc.amber .fc-name{color:var(--amber);}
+.fc.purple .fc-name{color:var(--purple);}
+.fc.pink .fc-name{color:var(--pink);}
+.fc.cyan .fc-name{color:var(--cyan);}
+
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.fc.blue .dot{background:var(--blue);}
+.fc.green .dot{background:var(--green);}
+.fc.amber .dot{background:var(--amber);}
+.fc.purple .dot{background:var(--purple);}
+.fc.pink .dot{background:var(--pink);}
+.fc.cyan .dot{background:var(--cyan);}
+
+/* ── HOOK PILL ── */
+.hook{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:0.65rem;padding:2px 8px;border-radius:4px;
+  margin:2px 2px 2px 0;
+  font-weight:600;
+}
+.h-state{background:rgba(59,130,246,.15);color:var(--blue);border:1px solid rgba(59,130,246,.25);}
+.h-effect{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.25);}
+.h-ctx{background:rgba(167,139,250,.15);color:var(--purple);border:1px solid rgba(167,139,250,.25);}
+.h-cb{background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.25);}
+.h-nav{background:rgba(244,114,182,.15);color:var(--pink);border:1px solid rgba(244,114,182,.25);}
+.h-outlet{background:rgba(34,211,238,.15);color:var(--cyan);border:1px solid rgba(34,211,238,.25);}
+
+/* ── PURPOSE LINES ── */
+.purpose{font-size:0.68rem;color:var(--muted);line-height:1.85;margin-top:6px;}
+.purpose span{color:var(--text);}
+
+/* ── ROUTE TABLE ── */
+.rtable{width:100%;border-collapse:collapse;font-size:0.7rem;}
+.rtable th{
+  text-align:left;padding:7px 12px;
+  background:var(--s3);color:var(--muted);
+  font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;
+  border-bottom:1px solid var(--border);
+}
+.rtable td{
+  padding:8px 12px;border-bottom:1px solid var(--dim);
+  vertical-align:top;line-height:1.7;
+}
+.rtable tr:last-child td{border-bottom:none;}
+.rtable tr:hover td{background:var(--s2);}
+.path{color:var(--cyan);font-weight:600;}
+.guard{
+  font-size:0.62rem;padding:1px 7px;border-radius:4px;font-weight:700;
+}
+.g-priv{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.2);}
+.g-pub {background:rgba(244,114,182,.15);color:var(--pink);border:1px solid rgba(244,114,182,.2);}
+
+/* ── RENDER TREE ── */
+.tree{font-size:0.72rem;line-height:2;color:var(--muted);}
+.tree .node{display:block;}
+.tree .indent1{padding-left:20px;}
+.tree .indent2{padding-left:40px;}
+.tree .indent3{padding-left:60px;}
+.tree .indent4{padding-left:80px;}
+.nt-file{color:var(--blue);}
+.nt-comp{color:var(--green);}
+.nt-hook{color:var(--amber);}
+.nt-ctx{color:var(--purple);}
+.nt-comment{color:var(--muted);font-size:0.63rem;}
+.branch{color:var(--dim);}
+
+/* ── FLOW STEPS ── */
+.steps{display:flex;flex-direction:column;gap:0;}
+.step{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:10px 0;border-bottom:1px solid var(--dim);
+}
+.step:last-child{border-bottom:none;}
+.snum{
+  width:24px;height:24px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.65rem;font-weight:700;margin-top:1px;
+}
+.snum.blue{background:var(--blue-g);color:var(--blue);border:1px solid rgba(59,130,246,.3);}
+.snum.green{background:var(--green-g);color:var(--green);border:1px solid rgba(16,185,129,.3);}
+.snum.purple{background:var(--purple-g);color:var(--purple);border:1px solid rgba(167,139,250,.3);}
+.snum.amber{background:var(--amber-g);color:var(--amber);border:1px solid rgba(245,158,11,.3);}
+.snum.pink{background:var(--pink-g);color:var(--pink);border:1px solid rgba(244,114,182,.3);}
+.snum.cyan{background:var(--cyan-g);color:var(--cyan);border:1px solid rgba(34,211,238,.3);}
+.stxt{font-size:0.72rem;color:var(--text);line-height:1.7;}
+.stxt .dim{color:var(--muted);font-size:0.68rem;}
+.stxt code{
+  background:var(--s3);color:var(--amber);
+  padding:1px 5px;border-radius:3px;font-size:0.68rem;
+}
+
+/* ── HOOK LEGEND ── */
+.legend{
+  max-width:1160px;margin:28px auto 0;
+  display:flex;gap:10px;flex-wrap:wrap;
+  padding:14px 20px;border:1px solid var(--border);
+  border-radius:10px;background:var(--s1);
+  justify-content:center;
+}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:0.67rem;color:var(--muted);}
+
+/* ── MINI BADGE ── */
+.badge{
+  font-size:0.6rem;padding:1px 6px;border-radius:3px;
+  font-weight:700;display:inline-flex;align-items:center;
+}
+.b-renders{background:rgba(34,211,238,.12);color:var(--cyan);border:1px solid rgba(34,211,238,.2);}
+
+/* two-col layout for some sections */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:700px){.two-col{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<h1>BrainCache — Frontend Architecture</h1>
+<p class="sub">How React renders · Routing · Components · Hooks · Data Flow</p>
+
+<!-- ══════════════════════════════════════════════════
+     0. ENTRY POINT
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="sec-head">
+    <span class="sec-tag t-blue">① Entry Point</span>
+    <span style="font-size:.68rem;color:var(--muted);">main.jsx → App.jsx — this is where everything starts</span>
+  </div>
+  <div class="sec-body">
+    <div class="row">
+
+      <div class="fc blue" style="max-width:260px;">
+        <div class="fc-name"><span class="dot"></span>main.jsx</div>
+        <div class="purpose">
+          The very first file Node runs.<br>
+          <span>ReactDOM.createRoot()</span> mounts the entire app into<br>
+          the <code style="color:var(--amber);background:var(--s3);padding:1px 4px;border-radius:3px;font-size:.67rem;">#root</code> div in index.html.<br><br>
+          Wraps everything in <span>&lt;React.StrictMode&gt;</span>.<br>
+          Imports global.css here (only place).
+        </div>
+      </div>
+
+      <div class="fc blue" style="flex:2;">
+        <div class="fc-name"><span class="dot"></span>App.jsx — Root Component (no hooks used here)</div>
+        <div class="purpose" style="margin-bottom:10px;">
+          Two jobs only: <span>wrap providers</span> and <span>declare routes</span>. No state, no effects.
+        </div>
+        <div class="tree">
+          <span class="node"><span class="nt-ctx">&lt;AuthProvider&gt;</span> <span class="nt-comment">← wraps EVERYTHING so all children can access auth state</span></span>
+          <span class="node indent1"><span class="nt-comp">&lt;BrowserRouter&gt;</span> <span class="nt-comment">← enables React Router (URL watching)</span></span>
+          <span class="node indent2"><span class="nt-comp">&lt;AppRoutes&gt;</span> <span class="nt-comment">← inner component that reads useAuth() and renders routes</span></span>
+          <span class="node indent3"><span class="nt-comp">&lt;Routes&gt;</span></span>
+          <span class="node indent4"><span class="branch">├─</span> <span class="nt-comp">&lt;PublicRoute&gt;</span> → /login, /register</span>
+          <span class="node indent4"><span class="branch">└─</span> <span class="nt-comp">&lt;PrivateRoute&gt;</span> → / · /archive · /profile</span>
+        </div>
+      </div>
+
+      <div class="fc purple" style="max-width:240px;">
+        <div class="fc-name"><span class="dot"></span>Why AppRoutes is separate?</div>
+        <div class="purpose">
+          <span>useAuth()</span> hook can only be called <em>inside</em> AuthProvider's children.<br><br>
+          App.jsx renders AuthProvider, so AppRoutes (a child) can safely call <span>useAuth()</span> to decide which routes are visible.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="conn"><div class="conn-line"></div><div class="conn-label">AuthProvider wraps → context value flows down to ALL children</div><div class="conn-arrow"></div></div>
+
+<!-- ══════════════════════════════════════════════════
+     1. AUTH CONTEXT
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="sec-head">
+    <span class="sec-tag t-purple">② AuthContext.jsx — Global Auth State</span>
+    <span style="font-size:.68rem;color:var(--muted);">Lives in memory for entire session. Any component can read it.</span>
+  </div>
+  <div class="sec-body">
+    <div class="row">
+
+      <div class="fc purple">
+        <div class="fc-name"><span class="dot"></span>State managed here</div>
+        <div style="margin-bottom:8px;">
+          <span class="hook h-state">useState — user</span>
+          <span class="hook h-state">useState — loading</span>
+          <span class="hook h-effect">useEffect — on mount</span>
+        </div>
+        <div class="purpose">
+          <span>user</span> = the logged-in user object (or null)<br>
+          <span>loading</span> = true while checking token on page refresh<br><br>
+          <span>useEffect on mount:</span><br>
+          Reads token from localStorage → calls <code>/api/auth/me</code> → sets user state.<br>
+          This is how the app knows you're still logged in after refresh.
+        </div>
+      </div>
+
+      <div class="fc purple">
+        <div class="fc-name"><span class="dot"></span>Functions exposed via Context</div>
+        <div class="purpose">
+          <span>login(email, pass)</span><br>
+          → POST /auth/login → saves token → setUser()<br><br>
+          <span>register(username, email, pass)</span><br>
+          → POST /auth/register → saves token → setUser()<br><br>
+          <span>logout()</span><br>
+          → removes token from localStorage → setUser(null)<br><br>
+          <span>updateUser(updatedUser)</span><br>
+          → directly sets user state (used after profile edit)
+        </div>
+      </div>
+
+      <div class="fc purple">
+        <div class="fc-name"><span class="dot"></span>useAuth() hook — how components use it</div>
+        <div class="purpose">
+          Any component calls:<br>
+          <code>const { user, login, logout } = useAuth()</code><br><br>
+          Used in:<br>
+          <span>AppRoutes</span> → check if logged in for routing<br>
+          <span>Layout</span> → show username / avatar / logout<br>
+          <span>ProfilePage</span> → read + update user info<br>
+          <span>LoginPage</span> → call login()<br>
+          <span>RegisterPage</span> → call register()
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="conn"><div class="conn-line"></div><div class="conn-label">Router reads auth state → decides which component renders for each URL</div><div class="conn-arrow"></div></div>
+
+<!-- ══════════════════════════════════════════════════
+     2. ROUTING
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="sec-head">
+    <span class="sec-tag t-pink">③ Routing — AppRoutes in App.jsx</span>
+    <span style="font-size:.68rem;color:var(--muted);">React Router v6 · URL controls what renders</span>
+  </div>
+  <div class="sec-body">
+    <table class="rtable">
+      <thead>
+        <tr>
+          <th>URL Path</th>
+          <th>Guard</th>
+          <th>Component rendered</th>
+          <th>What it does</th>
+          <th>If guard fails → redirect to</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="path">/login</td>
+          <td><span class="guard g-pub">PublicRoute</span></td>
+          <td><span style="color:var(--pink);">LoginPage</span></td>
+          <td>Email + password form. Calls <code>login()</code> from AuthContext</td>
+          <td class="path">/ (already logged in)</td>
+        </tr>
+        <tr>
+          <td class="path">/register</td>
+          <td><span class="guard g-pub">PublicRoute</span></td>
+          <td><span style="color:var(--pink);">RegisterPage</span></td>
+          <td>Username + email + password. Calls <code>register()</code></td>
+          <td class="path">/ (already logged in)</td>
+        </tr>
+        <tr>
+          <td class="path">/ (index)</td>
+          <td><span class="guard g-priv">PrivateRoute</span></td>
+          <td><span style="color:var(--cyan);">Layout</span> → <span style="color:var(--blue);">DashboardPage</span></td>
+          <td>Main note grid. Search, filter, create/edit notes</td>
+          <td class="path">/login (not logged in)</td>
+        </tr>
+        <tr>
+          <td class="path">/archive</td>
+          <td><span class="guard g-priv">PrivateRoute</span></td>
+          <td><span style="color:var(--cyan);">Layout</span> → <span style="color:var(--blue);">ArchivePage</span></td>
+          <td>Shows archived notes. Unarchive or delete</td>
+          <td class="path">/login</td>
+        </tr>
+        <tr>
+          <td class="path">/profile</td>
+          <td><span class="guard g-priv">PrivateRoute</span></td>
+          <td><span style="color:var(--cyan);">Layout</span> → <span style="color:var(--blue);">ProfilePage</span></td>
+          <td>Edit username, email, upload avatar</td>
+          <td class="path">/login</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:16px;" class="row">
+      <div class="fc pink" style="flex:1;">
+        <div class="fc-name"><span class="dot"></span>PublicRoute logic</div>
+        <div class="purpose">
+          Uses <span>useAuth()</span> → reads <span>user</span> and <span>loading</span><br>
+          If loading → show spinner (prevents flash)<br>
+          If user exists → <span>&lt;Navigate to="/"&gt;</span> (kick out)<br>
+          If no user → render children (show the page)
+        </div>
+      </div>
+      <div class="fc green" style="flex:1;">
+        <div class="fc-name"><span class="dot"></span>PrivateRoute logic</div>
+        <div class="purpose">
+          Uses <span>useAuth()</span> → reads <span>user</span> and <span>loading</span><br>
+          If loading → show spinner (token check in progress)<br>
+          If no user → <span>&lt;Navigate to="/login"&gt;</span><br>
+          If user exists → render children (allow in)
+        </div>
+      </div>
+      <div class="fc amber" style="flex:1;">
+        <div class="fc-name"><span class="dot"></span>loading state — why it matters</div>
+        <div class="purpose">
+          On page refresh, useEffect in AuthContext runs async.<br>
+          Without <span>loading</span> guard, React would flash<br>
+          /login for a split second even if token is valid.<br>
+          <span>loading=true</span> shows a spinner until the<br>
+          /auth/me check completes.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="conn"><div class="conn-line"></div><div class="conn-label">PrivateRoute renders Layout → Layout renders the page via &lt;Outlet&gt;</div><div class="conn-arrow"></div></div>
+
+<!-- ══════════════════════════════════════════════════
+     3. LAYOUT
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="sec-head">
+    <span class="sec-tag t-cyan">④ Layout.jsx — Persistent Shell</span>
+    <span style="font-size:.68rem;color:var(--muted);">Renders once. Sidebar stays. Only the &lt;Outlet&gt; slot changes per route.</span>
+  </div>
+  <div class="sec-body">
+    <div class="row">
+
+      <div class="fc cyan" style="max-width:300px;">
+        <div class="fc-name"><span class="dot"></span>Hooks used</div>
+        <div style="margin-bottom:8px;">
+          <span class="hook h-ctx">useAuth()</span>
+          <span class="hook h-state">useState — tags[]</span>
+          <span class="hook h-state">useState — showTagsModal</span>
+          <span class="hook h-state">useState — selectedTag</span>
+          <span class="hook h-effect">useEffect — fetchTags</span>
+          <span class="hook h-nav">useNavigate()</span>
+          <span class="hook h-outlet">useToast()</span>
+        </div>
+        <div class="purpose">
+          <span>tags[]</span> = list of user's tags shown in sidebar<br>
+          <span>showTagsModal</span> = open/close TagsModal<br>
+          <span>selectedTag</span> = which tag is active filter<br>
+          <span>useEffect</span> = fetch tags from API once on mount
+        </div>
+      </div>
+
+      <div class="fc cyan" style="flex:2;">
+        <div class="fc-name"><span class="dot"></span>What Layout renders</div>
+        <div class="tree">
+          <span class="node"><span class="branch">&lt;div class="app-layout"&gt;</span></span>
+          <span class="node indent1"><span class="nt-comp">&lt;Sidebar&gt;</span> <span class="nt-comment">← always visible, same across all pages</span></span>
+          <span class="node indent2"><span class="branch">Logo, nav links (Dashboard/Archive/Profile)</span></span>
+          <span class="node indent2"><span class="branch">Tag list (from tags[] state)</span></span>
+          <span class="node indent2"><span class="branch">User avatar + name (from useAuth().user)</span></span>
+          <span class="node indent2"><span class="branch">Logout button → logout() → navigate('/login')</span></span>
+          <span class="node indent1"><span class="nt-comp">&lt;main&gt;</span></span>
+          <span class="node indent2"><span class="nt-ctx">&lt;Outlet /&gt;</span> <span class="nt-comment">← THIS is where DashboardPage/ArchivePage/ProfilePage renders</span></span>
+          <span class="node indent1"><span class="nt-comp">&lt;TagsModal /&gt;</span> <span class="nt-comment">← only if showTagsModal = true</span></span>
+          <span class="node indent1"><span class="nt-comp">&lt;ToastContainer /&gt;</span> <span class="nt-comment">← always present, shows notifications</span></span>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:12px;" class="fc cyan">
+      <div class="fc-name"><span class="dot"></span>useOutletContext — how Layout passes data DOWN to pages</div>
+      <div class="purpose">
+        Layout passes <code>{'{ tags, fetchTags, selectedTag, setSelectedTag, toast }'}</code> via <code>&lt;Outlet context={...}&gt;</code><br>
+        Each page calls <code>const {'{ tags, fetchTags, selectedTag, toast }'} = useOutletContext()</code> to receive it.<br><br>
+        This means: <span>DashboardPage knows which tag is selected in the sidebar without prop drilling.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="conn"><div class="conn-line"></div><div class="conn-label">Outlet slot fills with the matched page component</div><div class="conn-arrow"></div></div>
+
+<!-- ══════════════════════════════════════════════════
+     4. PAGES
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="sec-head">
+    <span class="sec-tag t-blue">⑤ Pages — What renders inside &lt;Outlet&gt;</span>
+    <span style="font-size:.68rem;color:var(--muted);">Each page is an independent component. All receive context from Layout via useOutletContext.</span>
+  </div>
+  <div class="sec-body">
+    <div class="col">
+
+      <!-- DASHBOARD -->
+      <div class="fc blue">
+        <div class="fc-name"><span class="dot"></span>DashboardPage.jsx — route: /</div>
+        <div class="row" style="margin-top:6px;">
+          <div style="flex:1;min-width:200px;">
+            <div style="font-size:0.65rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">Hooks used</div>
+            <span class="hook h-state">useState — notes[]</span>
+            <span class="hook h-state">useState — loading</span>
+            <span class="hook h-state">useState — search</span>
+            <span class="hook h-state">useState — typeFilter</span>
+            <span class="hook h-state">useState — showModal</span>
+            <span class="hook h-state">useState — editNote</span>
+            <span class="hook h-effect">useEffect — fetchNotes</span>
+            <span class="hook h-cb">useCallback — fetchNotes</span>
+            <span class="hook h-outlet">useOutletContext()</span>
+          </div>
+          <div style="flex:2;">
+            <div style="font-size:0.65rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">What each hook does</div>
+            <div class="purpose">
+              <span>notes[]</span> = array of note objects from API<br>
+              <span>search</span> = text in search box. useEffect re-runs when it changes (300ms debounce)<br>
+              <span>typeFilter</span> = 'all' | 'text' | 'image' | 'link' | 'file' — filters the API query<br>
+              <span>showModal</span> = controls whether NoteModal is visible<br>
+              <span>editNote</span> = null (create mode) OR a note object (edit mode) passed to NoteModal<br>
+              <span>useCallback(fetchNotes)</span> = memoises the fetch function so useEffect doesn't loop<br>
+              <span>useEffect</span> = watches [search, typeFilter, selectedTag] → calls fetchNotes with params<br>
+              <span>useOutletContext</span> = gets tags, fetchTags, selectedTag, toast from Layout
+            </div>
+          </div>
+          <div style="flex:1.5;min-width:200px;">
+            <div style="font-size:0.65rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">Renders</div>
+            <div class="tree">
+              <span class="node"><span class="nt-comp">Topbar</span> (search box + New Note btn)</span>
+              <span class="node"><span class="nt-comp">FilterBar</span> (type buttons)</span>
+              <span class="node"><span class="nt-comp">notes-grid</span></span>
+              <span class="node indent1"><span class="branch">if pinned:</span> <span class="nt-comp">section + NoteCards</span></span>
+              <span class="node indent1"><span class="branch">if unpinned:</span> <span class="nt-comp">NoteCards</span></span>
+              <span class="node indent1"><span class="branch">if empty:</span> <span class="nt-comp">EmptyState</span></span>
+              <span class="node"><span class="branch">if showModal:</span> <span class="nt-comp">NoteModal</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ARCHIVE -->
+      <div class="fc green">
+        <div class="fc-name"><span class="dot"></span>ArchivePage.jsx — route: /archive</div>
+        <div class="row" style="margin-top:6px;">
+          <div style="flex:1;">
+            <span class="hook h-state">useState — notes[]</span>
+            <span class="hook h-state">useState — loading</span>
+            <span class="hook h-effect">useEffect — fetchArchived</span>
+            <span class="hook h-outlet">useOutletContext()</span>
+            <div class="purpose" style="margin-top:8px;">
+              Simpler page. <span>useEffect</span> fires once on mount → GET /notes/archived → fills notes[].<br>
+              No search, no filter. Just renders archived NoteCards with Unarchive + Delete actions.
+            </div>
+          </div>
+          <div style="flex:1.5;">
+            <div class="tree">
+              <span class="node"><span class="nt-comp">Topbar</span> (title only)</span>
+              <span class="node"><span class="nt-comp">notes-grid</span></span>
+              <span class="node indent1"><span class="branch">NoteCard</span> × archived notes</span>
+              <span class="node indent1"><span class="branch">if empty:</span> EmptyState</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFILE -->
+      <div class="fc amber">
+        <div class="fc-name"><span class="dot"></span>ProfilePage.jsx — route: /profile</div>
+        <div class="row" style="margin-top:6px;">
+          <div style="flex:1;">
+            <span class="hook h-ctx">useAuth()</span>
+            <span class="hook h-state">useState — form {username, email}</span>
+            <span class="hook h-state">useState — loading</span>
+            <span class="hook h-state">useState — avatarLoading</span>
+            <span class="hook h-outlet">useOutletContext()</span>
+            <div class="purpose" style="margin-top:8px;">
+              No useEffect needed — user data comes from <span>useAuth().user</span> directly (already in memory).<br>
+              <span>form</span> is initialised from user object.<br>
+              Avatar upload → PUT /upload/avatar → calls <span>updateUser()</span> to refresh context.
+            </div>
+          </div>
+          <div style="flex:1.5;">
+            <div class="tree">
+              <span class="node"><span class="nt-comp">Topbar</span></span>
+              <span class="node"><span class="nt-comp">profile-grid</span></span>
+              <span class="node indent1"><span class="branch">Avatar card</span> (click → file input → upload)</span>
+              <span class="node indent1"><span class="branch">Profile form</span> (username + email + Save)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOGIN / REGISTER -->
+      <div class="row">
+        <div class="fc pink">
+          <div class="fc-name"><span class="dot"></span>LoginPage.jsx — route: /login</div>
+          <span class="hook h-ctx">useAuth()</span>
+          <span class="hook h-state">useState — form</span>
+          <span class="hook h-state">useState — loading</span>
+          <span class="hook h-state">useState — error</span>
+          <span class="hook h-state">useState — showPass</span>
+          <span class="hook h-nav">useNavigate()</span>
+          <div class="purpose" style="margin-top:8px;">
+            Submit → <code>login(email, pass)</code> from AuthContext<br>
+            On success → <code>navigate('/')</code><br>
+            On fail → setError(message) → show inline error
+          </div>
+        </div>
+        <div class="fc pink">
+          <div class="fc-name"><span class="dot"></span>RegisterPage.jsx — route: /register</div>
+          <span class="hook h-ctx">useAuth()</span>
+          <span class="hook h-state">useState — form</span>
+          <span class="hook h-state">useState — loading</span>
+          <span class="hook h-state">useState — error</span>
+          <span class="hook h-state">useState — showPass</span>
+          <span class="hook h-nav">useNavigate()</span>
+          <div class="purpose" style="margin-top:8px;">
+            Submit → <code>register(username, email, pass)</code><br>
+            On success → <code>navigate('/')</code><br>
+            Client validates password length before API call
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="conn"><div class="conn-line"></div><div class="conn-label">Pages render Components — modals, cards, toast</div><div class="conn-arrow"></div></div>
+
+<!-- ══════════════════════════════════════════════════
+     5. COMPONENTS
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="sec-head">
+    <span class="sec-tag t-green">⑥ Components — Reusable UI Pieces</span>
+    <span style="font-size:.68rem;color:var(--muted);">Used by pages. Receive props, don't fetch data themselves (except TagsModal)</span>
+  </div>
+  <div class="sec-body">
+    <div class="row">
+
+      <div class="fc green">
+        <div class="fc-name"><span class="dot"></span>NoteCard.jsx</div>
+        <div class="purpose">
+          <span>Props received:</span><br>
+          note, onEdit, onDelete, onPin, onArchive, showArchiveRestore<br><br>
+          <span>No hooks.</span> Pure display component.<br>
+          Renders title, content preview, tags, date, type badge.<br>
+          Action buttons (pin/archive/edit/delete) call<br>
+          the handler functions passed as props from the page.
+        </div>
+      </div>
+
+      <div class="fc green">
+        <div class="fc-name"><span class="dot"></span>NoteModal.jsx</div>
+        <div class="purpose">
+          <span>Props:</span> note (null=create), tags[], onClose, onSave, toast<br><br>
+          <span>useState:</span> form{title,content,type,link_url,selectedTags}<br>
+          <span>useState:</span> file, loading, preview<br>
+          <span>useEffect:</span> populates form when editing (note prop changes)<br><br>
+          On submit → builds FormData → POST or PUT /notes → calls onSave() → closes.
+        </div>
+      </div>
+
+      <div class="fc green">
+        <div class="fc-name"><span class="dot"></span>TagsModal.jsx</div>
+        <div class="purpose">
+          <span>Props:</span> tags[], onClose, onUpdate, toast<br><br>
+          <span>useState:</span> newName, newColor, editingId, editName, editColor<br><br>
+          Handles its own API calls:<br>
+          POST /tags → create<br>
+          PUT /tags/:id → update<br>
+          DELETE /tags/:id → delete<br>
+          Calls <span>onUpdate()</span> after each to refresh Layout's tag list.
+        </div>
+      </div>
+
+      <div class="fc green">
+        <div class="fc-name"><span class="dot"></span>ToastContainer.jsx</div>
+        <div class="purpose">
+          <span>Props:</span> toasts[] from useToast()<br><br>
+          <span>No hooks.</span> Pure render.<br>
+          Maps toasts array → renders floating<br>
+          notification divs with type-based color<br>
+          (success=green, error=red, warning=amber).
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="conn"><div class="conn-line"></div><div class="conn-label">useToast custom hook — shared across Layout + all pages</div><div class="conn-arrow"></div></div>
+
+<!-- ══════════════════════════════════════════════════
+     6. HOOKS
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="sec-head">
+    <span class="sec-tag t-amber">⑦ Custom Hooks</span>
+    <span style="font-size:.68rem;color:var(--muted);">Reusable logic extracted out of components</span>
+  </div>
+  <div class="sec-body">
+    <div class="row">
+      <div class="fc amber" style="flex:1.2;">
+        <div class="fc-name"><span class="dot"></span>useToast.js</div>
+        <div style="margin-bottom:8px;">
+          <span class="hook h-state">useState — toasts[]</span>
+          <span class="hook h-cb">useCallback — addToast</span>
+        </div>
+        <div class="purpose">
+          <span>toasts[]</span> = array of {id, message, type}<br><br>
+          <span>addToast(message, type, duration)</span>:<br>
+          1. Generates unique id<br>
+          2. Adds toast to array → ToastContainer renders it<br>
+          3. setTimeout → removes it after duration (3s)<br><br>
+          <span>Exposes shorthand object:</span><br>
+          <code>toast.success(msg)</code> <code>toast.error(msg)</code><br>
+          <code>toast.warning(msg)</code> <code>toast.info(msg)</code><br><br>
+          Used in Layout → passed via Outlet context to all pages.
+        </div>
+      </div>
+      <div class="fc amber" style="flex:2;">
+        <div class="fc-name"><span class="dot"></span>How toast flows through the app</div>
+        <div class="tree" style="line-height:2.2;">
+          <span class="node"><span class="nt-comp">Layout.jsx</span> → <code style="color:var(--amber);background:var(--s3);padding:1px 5px;border-radius:3px;font-size:.67rem;">const {'{ toasts, toast }'} = useToast()</code></span>
+          <span class="node indent1"><span class="branch">↓ passes</span> <code style="color:var(--amber);background:var(--s3);padding:1px 5px;border-radius:3px;font-size:.67rem;">toast</code> into <code style="color:var(--cyan);background:var(--s3);padding:1px 5px;border-radius:3px;font-size:.67rem;">&lt;Outlet context={'{ toast }'}&gt;</code></span>
+          <span class="node indent2"><span class="branch">↓ every page gets it via</span> <code style="color:var(--amber);background:var(--s3);padding:1px 5px;border-radius:3px;font-size:.67rem;">useOutletContext()</code></span>
+          <span class="node indent3"><span class="branch">↓ pages pass it as prop to</span> <span class="nt-comp">NoteModal</span>, <span class="nt-comp">TagsModal</span></span>
+          <span class="node indent4"><span class="branch">→ they call</span> <code style="color:var(--amber);background:var(--s3);padding:1px 5px;border-radius:3px;font-size:.67rem;">toast.success()</code> or <code style="color:var(--amber);background:var(--s3);padding:1px 5px;border-radius:3px;font-size:.67rem;">toast.error()</code></span>
+          <span class="node indent1"><span class="branch">↓ toasts[] state updates in Layout</span></span>
+          <span class="node indent2"><span class="branch">→</span> <span class="nt-comp">ToastContainer</span> re-renders → notification appears</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="conn"><div class="conn-line"></div><div class="conn-label">api.js — all HTTP calls go through here</div><div class="conn-arrow"></div></div>
+
+<!-- ══════════════════════════════════════════════════
+     7. API.JS
+══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="sec-head">
+    <span class="sec-tag t-cyan">⑧ api.js — Fetch Utility (not a hook, not a component)</span>
+    <span style="font-size:.68rem;color:var(--muted);">Plain JS module. Every page/component imports it directly.</span>
+  </div>
+  <div class="sec-body">
+    <div class="row">
+      <div class="fc cyan">
+        <div class="fc-name"><span class="dot"></span>What it does</div>
+        <div class="purpose">
+          Single <code>request()</code> function wraps native <span>fetch</span>.<br><br>
+          Auto-reads JWT from <code>localStorage.getItem('braincache_token')</code><br>
+          → adds <code>Authorization: Bearer token</code> header automatically.<br><br>
+          Detects FormData → skips Content-Type (browser sets multipart boundary).<br>
+          Throws errors with the server's message so components can catch them.
+        </div>
+      </div>
+      <div class="fc cyan">
+        <div class="fc-name"><span class="dot"></span>Usage pattern everywhere</div>
+        <div class="purpose">
+          <code>const data = await api.get('/notes')</code><br>
+          <code>const data = await api.post('/notes', formData)</code><br>
+          <code>await api.delete('/notes/5')</code><br><br>
+          Always called inside <span>try/catch</span>:<br>
+          <code>catch(err) → toast.error(err.message)</code><br><br>
+          VITE_API_URL env var sets the base URL<br>
+          (http://localhost:5000/api in dev)
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     FULL RENDER FLOW
+══════════════════════════════════════════════════ -->
+<div class="section" style="margin-top:10px;">
+  <div class="sec-head">
+    <span class="sec-tag t-purple">⑨ Initial Render Flow — What happens when you open the app</span>
+  </div>
+  <div class="sec-body">
+    <div class="two-col">
+      <div>
+        <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">First Load (not logged in)</div>
+        <div class="steps">
+          <div class="step"><span class="snum blue">1</span><div class="stxt">Browser loads index.html → runs main.jsx<div class="dim">ReactDOM.createRoot().render(&lt;App/&gt;)</div></div></div>
+          <div class="step"><span class="snum blue">2</span><div class="stxt">App renders AuthProvider → initial state: <code>user=null, loading=true</code></div></div>
+          <div class="step"><span class="snum green">3</span><div class="stxt">AuthProvider's useEffect runs → checks localStorage for token<div class="dim">No token found → sets loading=false, user stays null</div></div></div>
+          <div class="step"><span class="snum purple">4</span><div class="stxt">AppRoutes renders → calls useAuth() → user=null, loading=false</div></div>
+          <div class="step"><span class="snum pink">5</span><div class="stxt">URL is "/" → PrivateRoute → no user → <code>&lt;Navigate to="/login"&gt;</code></div></div>
+          <div class="step"><span class="snum pink">6</span><div class="stxt">LoginPage renders — form is empty, waiting for user input</div></div>
+          <div class="step"><span class="snum amber">7</span><div class="stxt">User submits → <code>login()</code> → API returns token + user<div class="dim">Token saved to localStorage, setUser(user) called</div></div></div>
+          <div class="step"><span class="snum green">8</span><div class="stxt">AuthContext updates → user is now set → React re-renders<div class="dim">PublicRoute sees user → redirects to "/"</div></div></div>
+          <div class="step"><span class="snum cyan">9</span><div class="stxt">Layout mounts → useEffect fetches tags → Sidebar + Outlet render<div class="dim">DashboardPage mounts → useEffect fetches notes → grid renders</div></div></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Page Refresh (already logged in)</div>
+        <div class="steps">
+          <div class="step"><span class="snum blue">1</span><div class="stxt">main.jsx runs again → App renders → AuthProvider mounts<div class="dim">user=null, loading=true initially</div></div></div>
+          <div class="step"><span class="snum green">2</span><div class="stxt">AuthProvider useEffect → finds token in localStorage<div class="dim">Calls GET /auth/me with the token</div></div></div>
+          <div class="step"><span class="snum purple">3</span><div class="stxt">While waiting: <code>loading=true</code> → PrivateRoute shows spinner<div class="dim">No flash to /login — spinner blocks premature redirect</div></div></div>
+          <div class="step"><span class="snum amber">4</span><div class="stxt">/auth/me responds → setUser(user), setLoading(false)</div></div>
+          <div class="step"><span class="snum cyan">5</span><div class="stxt">PrivateRoute re-renders → user exists → renders Layout + page<div class="dim">App looks exactly as before the refresh</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOOK LEGEND -->
+<div class="legend">
+  <div class="leg-item"><span class="hook h-state" style="margin:0;">useState</span> local component state</div>
+  <div class="leg-item"><span class="hook h-effect" style="margin:0;">useEffect</span> side effects / API calls</div>
+  <div class="leg-item"><span class="hook h-ctx" style="margin:0;">useAuth()</span> reads AuthContext</div>
+  <div class="leg-item"><span class="hook h-cb" style="margin:0;">useCallback</span> memoised function</div>
+  <div class="leg-item"><span class="hook h-nav" style="margin:0;">useNavigate()</span> programmatic routing</div>
+  <div class="leg-item"><span class="hook h-outlet" style="margin:0;">useOutletContext()</span> data from Layout</div>
+</div>
+
+</body>
+</html>
