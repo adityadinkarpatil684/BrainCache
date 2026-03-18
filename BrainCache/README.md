@@ -2,6 +2,11 @@
 
 A full-stack note-taking application with image/file uploads, tags, pinning, and archiving.
 
+
+https://github.com/user-attachments/assets/2833d263-13b0-4451-893a-268a72c1fb34
+
+
+
 ## Tech Stack
 - **Frontend:** React.js, React Router, Lucide React, Vanilla CSS
 - **Backend:** Node.js, Express.js
